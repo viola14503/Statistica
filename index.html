@@ -6,26 +6,6 @@
     <title>Unity Web Player | Statistica</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
-
-    <!-- full screen + centering del canvas -->
-    <style>
-      html, body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-      }
-
-      #unity-container {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #202020; /* bande nere intorno al gioco */
-      }
-    </style>
   </head>
   <body>
     <div id="unity-container" class="unity-desktop">
@@ -43,10 +23,35 @@
         <div id="unity-build-title">Statistica</div>
       </div>
     </div>
-
     <script>
       var canvas = document.querySelector("#unity-canvas");
 
+      // Mantieni SEMPRE il rapporto 16:9 e mostra tutto il gioco
+      var targetAspect = 1920 / 1080;
+
+      function resizeCanvas() {
+        var w = window.innerWidth;
+        var h = window.innerHeight;
+        var windowAspect = w / h;
+
+        if (windowAspect > targetAspect) {
+          // finestra più "larga" del 16:9 → limito sull'altezza
+          canvas.style.height = h + "px";
+          canvas.style.width  = (h * targetAspect) + "px";
+        } else {
+          // finestra più "stretta" (telefono verticale) → limito sulla larghezza
+          canvas.style.width  = w + "px";
+          canvas.style.height = (w / targetAspect) + "px";
+        }
+      }
+
+      // chiama subito e ogni volta che la finestra cambia
+      resizeCanvas();
+      window.addEventListener("resize", resizeCanvas);
+
+      // Shows a temporary message banner/ribbon for a few seconds, or
+      // a permanent error message on top of the canvas if type=='error'.
+      // If type=='warning', a yellow highlight color is used.
       function unityShowBanner(msg, type) {
         var warningBanner = document.querySelector("#unity-warning");
         function updateBannerVisibility() {
@@ -77,40 +82,26 @@
         companyName: "DefaultCompany",
         productName: "Statistica",
         productVersion: "0.1",
-        showBanner: unityShowBanner
+        showBanner: unityShowBanner,
       };
 
-      // meta viewport per usare tutto lo schermo sui device mobili
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        // Mobile
+
         var meta = document.createElement('meta');
         meta.name = 'viewport';
         meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
         document.getElementsByTagName('head')[0].appendChild(meta);
         document.querySelector("#unity-container").className = "unity-mobile";
         canvas.className = "unity-mobile";
+
+        // Se vuoi abbassare la risoluzione per performance:
+        // config.devicePixelRatio = 1;
+
+      } else {
+        // Desktop: non forziamo più una misura fissa,
+        // ci pensa resizeCanvas() a impostare width/height giuste.
       }
-
-      // Mantieni SEMPRE 16:9 (1920x1080), tutto visibile
-      var targetAspect = 1920 / 1080;
-
-      function resizeCanvas() {
-        var w = window.innerWidth;
-        var h = window.innerHeight;
-        var windowAspect = w / h;
-
-        if (windowAspect > targetAspect) {
-          // finestra più "larga" del 16:9 → limito per altezza
-          canvas.style.height = h + "px";
-          canvas.style.width  = (h * targetAspect) + "px";
-        } else {
-          // finestra più "stretta" (telefono verticale) → limito per larghezza
-          canvas.style.width  = w + "px";
-          canvas.style.height = (w / targetAspect) + "px";
-        }
-      }
-
-      resizeCanvas();
-      window.addEventListener("resize", resizeCanvas);
 
       document.querySelector("#unity-loading-bar").style.display = "block";
 
@@ -129,4 +120,8 @@
         });
       };
 
-      document.body.appendC
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>
+
